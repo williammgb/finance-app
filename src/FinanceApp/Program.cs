@@ -11,6 +11,7 @@ var connectionString = FinanceDb.PrepareFile(
 builder.Services.AddDbContextFactory<FinanceDb>(options => options.UseSqlite(connectionString));
 builder.Services.AddSingleton<CategoryService>();
 builder.Services.AddSingleton<EntryService>();
+builder.Services.AddSingleton<TransferService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

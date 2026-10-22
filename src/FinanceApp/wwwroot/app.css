@@ -569,3 +569,88 @@ input[type=checkbox], input[type=radio] {
         justify-content: flex-end;
     }
 }
+
+/* Data: export and import cards, file chooser, problem list, replace confirmation */
+
+.data-card + .data-card {
+    margin-top: 16px;
+}
+
+.data-card h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.data-row, .file-row, .confirm-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.data-row {
+    justify-content: space-between;
+}
+
+.data-summary {
+    margin: 0;
+}
+
+.file-row {
+    position: relative;
+}
+
+.file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.file-row:has(.file-input:focus-visible) .button {
+    outline: 2px solid #1c1c1a;
+    outline-offset: 2px;
+}
+
+.file-name {
+    min-width: 0;
+    color: #5f5e5a;
+    overflow-wrap: anywhere;
+}
+
+.import-result {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.problems, .confirm-box {
+    border: 1px solid #f3c1bc;
+    border-radius: 8px;
+    background: #fef3f2;
+    color: #b42318;
+}
+
+.problems {
+    margin: 16px 0 0;
+    padding: 12px 16px 12px 36px;
+}
+
+.confirm-box {
+    padding: 12px 16px;
+}
+
+.imported {
+    margin: 0;
+    font-weight: 600;
+}

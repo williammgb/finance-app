@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
+      "Blazor-ApexCharts": {
+        "type": "Direct",
+        "requested": "[7.0.0, )",
+        "resolved": "7.0.0",
+        "contentHash": "FlbdNp5S3+J3nwSCx9fJJidkwK9Ub2Y4nwY+KCD7gjDHKtIIScbfBzyMearK/v54M2NPveLaBzm1UtciupxF5g=="
+      },
       "Microsoft.AspNetCore.App.Internal.Assets": {
         "type": "Direct",
         "requested": "[10.0.10, )",

@@ -113,6 +113,32 @@ public sealed class CategoryServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CategoryWithOneLineCountsItAndCannotBeDeleted()
+    {
+        var pets = await db.Category("Pets");
+        Assert.Equal(0, Assert.Single(await db.Categories.List()).LineCount);
+
+        await db.Line(2026, 10, pets, 4599);
+
+        var listed = Assert.Single(await db.Categories.List());
+        Assert.Equal(1, listed.LineCount);
+        Assert.Equal(4599, listed.TotalCents);
+        Assert.Equal(CategoryService.InUse, (await db.Categories.Delete(pets)).Error);
+        Assert.Equal(["Pets"], await Names());
+    }
+
+    [Fact]
+    public async Task RenameToItsOwnNameIsSaved()
+    {
+        var pets = await db.Category("Pets");
+
+        var result = await db.Categories.Rename(pets, "Pets");
+
+        Assert.True(result.Ok);
+        Assert.Equal(["Pets"], await Names());
+    }
+
+    [Fact]
     public async Task DeleteRemovesUnusedCategory()
     {
         var food = await db.Category("Food");

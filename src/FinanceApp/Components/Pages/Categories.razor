@@ -1,3 +1,222 @@
 @page "/categories"
+@rendermode InteractiveServer
+@using FinanceApp.Services
+@inject CategoryService Service
 
 <h1>Categories</h1>
+
+<section class="card">
+    <form class="add-form" @onsubmit="Add">
+        <label for="new-category">Name</label>
+        <input id="new-category" autocomplete="off" @bind="newName" @bind:event="oninput" @bind:after="Typed" />
+        <button type="submit" class="button-primary" disabled="@Locked">Add category</button>
+        @if (addError is not null)
+        {
+            <div class="validation-message">@addError</div>
+        }
+    </form>
+</section>
+
+@if (categories is not null)
+{
+    <section class="card list-card">
+        @if (categories.Count == 0)
+        {
+            <p class="empty">No categories yet</p>
+        }
+        else
+        {
+            <div class="table-scroll">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="dot-cell" aria-label="Colour"></th>
+                            <th>Name</th>
+                            <th class="number">Lines</th>
+                            <th class="number">Total</th>
+                            <th class="actions" aria-label="Actions"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in categories)
+                        {
+                            <tr @key="category.Id">
+                                <td class="dot-cell"><span class="dot" style="background: @category.Color"></span></td>
+                                @if (renamingId == category.Id)
+                                {
+                                    <td class="rename-cell">
+                                        <input class="rename-input" aria-label="Name" autocomplete="off"
+                                               @ref="renameInput" @bind="renameName" @bind:event="oninput"
+                                               @onkeydown="RenameKey" />
+                                        @if (renameError is not null)
+                                        {
+                                            <div class="validation-message">@renameError</div>
+                                        }
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>@category.Name</td>
+                                }
+                                <td class="number">@category.LineCount</td>
+                                <td class="number">@Money.Format(category.TotalCents)</td>
+                                <td class="actions">
+                                    @if (renamingId == category.Id)
+                                    {
+                                        <button type="button" class="row-button button-primary" disabled="@Locked" @onclick="SaveRename">Save</button>
+                                        <button type="button" class="row-button" @onclick="CancelRename">Cancel</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="row-button" disabled="@Locked" @onclick="() => StartRename(category)">Rename</button>
+                                        <button type="button" class="row-button" disabled="@(Locked || category.LineCount > 0)"
+                                                title="@(category.LineCount > 0 ? LinesTitle(category.LineCount) : null)"
+                                                @onclick="() => Delete(category)">Delete</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @if (listError is not null)
+        {
+            <div class="validation-message">@listError</div>
+        }
+    </section>
+}
+
+@code {
+    private IReadOnlyList<CategorySummary>? categories;
+    private string newName = "";
+    private string? addError;
+    private int? renamingId;
+    private string renameName = "";
+    private string? renameError;
+    private string? listError;
+    private bool busy;
+    private bool justAdded;
+    private bool focusRename;
+    private ElementReference renameInput;
+
+    // Writes wait for the interactive circuit, and for the save that is running.
+    private bool Locked => busy || !RendererInfo.IsInteractive;
+
+    protected override async Task OnInitializedAsync() => categories = await Service.List();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (focusRename)
+        {
+            focusRename = false;
+            await renameInput.FocusAsync();
+        }
+    }
+
+    private async Task Reload() => categories = await Service.List();
+
+    private void Typed() => justAdded = false;
+
+    private async Task Add()
+    {
+        // justAdded: the second click of a double click can arrive after the first add
+        // finished and cleared the input; it is not a new submit until the user types.
+        if (busy || justAdded)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Service.Add(newName);
+            addError = result.Error;
+            if (result.Ok)
+            {
+                newName = "";
+                justAdded = true;
+                listError = null;
+                await Reload();
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void StartRename(CategorySummary category)
+    {
+        renamingId = category.Id;
+        renameName = category.Name;
+        renameError = null;
+        listError = null;
+        focusRename = true;
+    }
+
+    private void CancelRename()
+    {
+        renamingId = null;
+        renameError = null;
+    }
+
+    private async Task SaveRename()
+    {
+        if (busy || renamingId is not { } id)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Service.Rename(id, renameName);
+            renameError = result.Error;
+            if (result.Ok)
+            {
+                renamingId = null;
+                await Reload();
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task RenameKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SaveRename();
+        }
+        else if (e.Key == "Escape")
+        {
+            CancelRename();
+        }
+    }
+
+    private async Task Delete(CategorySummary category)
+    {
+        // The second click of a double click on a row already deleted does nothing.
+        if (busy || categories?.Any(c => c.Id == category.Id) != true)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Service.Delete(category.Id);
+            listError = result.Error;
+            await Reload();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private static string LinesTitle(int count) => count == 1 ? "1 line" : $"{count} lines";
+}

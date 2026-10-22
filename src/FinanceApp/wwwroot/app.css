@@ -247,3 +247,148 @@ input[type=checkbox], input[type=radio] {
 .validation-message {
     color: #b42318;
 }
+
+/* Categories: add form, table, colour dot and the row being renamed */
+
+.add-form {
+    display: grid;
+    grid-template-columns: minmax(0, 320px) auto;
+    justify-content: start;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 6px;
+}
+
+.add-form label {
+    grid-column: 1 / -1;
+    font-weight: 600;
+}
+
+.add-form .validation-message {
+    grid-column: 1;
+}
+
+.list-card {
+    margin-top: 16px;
+}
+
+.empty {
+    margin: 0;
+    color: #5f5e5a;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    padding: 0 12px 10px;
+    border-bottom: 1px solid #e4e3df;
+    color: #5f5e5a;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #efeeea;
+    vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table .number {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.table .actions {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.table .actions button + button {
+    margin-left: 8px;
+}
+
+.table .dot-cell {
+    width: 28px;
+    padding-right: 0;
+}
+
+.dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.rename-input {
+    width: 100%;
+    max-width: 320px;
+    min-height: 36px;
+}
+
+.rename-cell .validation-message {
+    margin-top: 4px;
+}
+
+/* Fixed widths, so a row in rename mode does not move the columns; Name takes the rest. */
+.table th.number:nth-child(3) {
+    width: 80px;
+}
+
+.table th.number:nth-child(4) {
+    width: 140px;
+}
+
+.table th.actions {
+    width: 1%;
+}
+
+@media (max-width: 720px) {
+    .table th, .table td {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    .table .dot-cell {
+        width: 18px;
+    }
+
+    .table th.number:nth-child(3) {
+        width: 40px;
+    }
+
+    .table th.number:nth-child(4) {
+        width: 72px;
+    }
+
+    .table .actions {
+        white-space: normal;
+        padding-right: 0;
+    }
+
+    .table .actions .row-button {
+        padding: 0 8px;
+    }
+
+    .table .actions button {
+        display: flex;
+        width: 100%;
+    }
+
+    .table .actions button + button {
+        margin-left: 0;
+        margin-top: 6px;
+    }
+}

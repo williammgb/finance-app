@@ -392,3 +392,180 @@ input[type=checkbox], input[type=radio] {
         margin-top: 6px;
     }
 }
+
+/* Spending: month switcher, add form, lines grouped by category, inline edit and total */
+
+.page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 24px;
+}
+
+.page-head h1 {
+    margin: 0;
+}
+
+.month-switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.month-button {
+    width: 44px;
+    padding: 0;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.month-name {
+    min-width: 150px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.entry-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.field label, .field-label {
+    font-weight: 600;
+}
+
+.field select, .field input {
+    width: 100%;
+}
+
+.field-category {
+    flex: 0 1 220px;
+}
+
+.field-amount {
+    flex: 0 1 140px;
+}
+
+.field-note {
+    flex: 1 1 240px;
+}
+
+.group + .group {
+    margin-top: 20px;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e4e3df;
+    font-weight: 700;
+}
+
+.group-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.group-subtotal, .line-amount, .total-amount {
+    white-space: nowrap;
+    text-align: right;
+}
+
+.line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 53px;
+    padding: 8px 0 8px 22px;
+    border-bottom: 1px solid #efeeea;
+}
+
+.line-amount {
+    flex: 0 0 110px;
+}
+
+.line-note {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #5f5e5a;
+    overflow-wrap: anywhere;
+}
+
+.line-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.confirm-text {
+    font-weight: 600;
+}
+
+.line-edit {
+    flex: 1 1 auto;
+    gap: 8px;
+}
+
+.line-edit input, .line-edit select {
+    min-height: 36px;
+}
+
+.line-edit .line-actions {
+    min-height: 36px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 2px solid #1c1c1a;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+@media (max-width: 720px) {
+    .month-name {
+        min-width: 120px;
+    }
+
+    .field-category, .field-amount, .field-note, .field-buttons {
+        flex: 1 1 100%;
+    }
+
+    .field-buttons .field-label {
+        display: none;
+    }
+
+    .line {
+        flex-wrap: wrap;
+        padding-left: 0;
+    }
+
+    .line-amount {
+        flex: 0 0 auto;
+    }
+
+    .line-actions {
+        flex: 1 1 100%;
+        justify-content: flex-end;
+    }
+}

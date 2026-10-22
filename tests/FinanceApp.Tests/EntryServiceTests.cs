@@ -1,3 +1,4 @@
+using FinanceApp.Components.Pages;
 using FinanceApp.Services;
 
 namespace FinanceApp.Tests;
@@ -31,6 +32,69 @@ public sealed class EntryServiceTests : IDisposable
                 new EntryLine(zooLine, 2026, 10, zoo, "Zoo", CategoryColors.At(0), 500, "tickets"),
             ],
             lines);
+    }
+
+    [Fact]
+    public async Task MonthGroupsByCategoryNameWithSubtotalsAndTotal()
+    {
+        var uitjes = await db.Category("Uitjes");
+        var boodschappen = await db.Category("boodschappen");
+        var first = await db.Line(2026, 10, uitjes, 1250, "bioscoop");
+        var shop = await db.Line(2026, 10, boodschappen, 4599);
+        var second = await db.Line(2026, 10, uitjes, 750);
+        await db.Line(2026, 11, uitjes, 99_999);
+        await db.Line(2027, 10, boodschappen, 99_999);
+
+        var groups = Spending.GroupByCategory(await db.Entries.ForMonth(2026, 10));
+
+        Assert.Equal(["boodschappen", "Uitjes"], groups.Select(g => g.Name));
+        Assert.Equal([boodschappen, uitjes], groups.Select(g => g.CategoryId));
+        Assert.Equal([CategoryColors.At(1), CategoryColors.At(0)], groups.Select(g => g.Color));
+        Assert.Equal([shop], groups[0].Lines.Select(l => l.Id));
+        Assert.Equal([first, second], groups[1].Lines.Select(l => l.Id));
+        Assert.Equal([4599L, 2000L], groups.Select(g => g.SubtotalCents));
+        Assert.Equal(6599, Spending.Total(groups));
+        Assert.Equal("€ 20,00", Money.Format(groups[1].SubtotalCents));
+    }
+
+    [Fact]
+    public async Task EmptyMonthHasNoGroupsAndZeroTotal()
+    {
+        var food = await db.Category("Food");
+        await db.Line(2026, 9, food, 100);
+
+        var groups = Spending.GroupByCategory(await db.Entries.ForMonth(2026, 10));
+
+        Assert.Empty(groups);
+        Assert.Equal(0, Spending.Total(groups));
+    }
+
+    [Fact]
+    public void GroupsHoldEveryLineOnceAndSubtotalsAddUpToTheTotal()
+    {
+        var random = new Random(8);
+        for (var run = 0; run < 500; run++)
+        {
+            var categoryCount = random.Next(1, 7);
+            var lines = Enumerable.Range(1, random.Next(0, 40))
+                .Select(id =>
+                {
+                    var category = random.Next(1, categoryCount + 1);
+                    var cents = random.Next(4) == 0 ? EntryService.MaxCents : random.NextInt64(0, EntryService.MaxCents + 1);
+                    return new EntryLine(id, 2026, 10, category, $"C{category}", CategoryColors.At(category), cents, null);
+                })
+                .OrderBy(l => l.CategoryName, CategoryService.NameOrder)
+                .ThenBy(l => l.Id)
+                .ToList();
+
+            var groups = Spending.GroupByCategory(lines);
+
+            Assert.Equal(lines, groups.SelectMany(g => g.Lines));
+            Assert.Equal(groups.Count, groups.Select(g => g.CategoryId).Distinct().Count());
+            Assert.All(groups, g => Assert.All(g.Lines, l => Assert.Equal(g.CategoryId, l.CategoryId)));
+            Assert.All(groups, g => Assert.Equal(g.Lines.Sum(l => l.AmountCents), g.SubtotalCents));
+            Assert.Equal(lines.Sum(l => l.AmountCents), Spending.Total(groups));
+        }
     }
 
     [Fact]

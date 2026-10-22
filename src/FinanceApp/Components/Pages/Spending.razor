@@ -1,3 +1,449 @@
 @page "/spending"
+@page "/spending/{Year:int}/{Month:int}"
+@rendermode InteractiveServer
+@using System.Globalization
+@using FinanceApp.Services
+@inject EntryService Entries
+@inject CategoryService Categories
+@inject NavigationManager Navigation
 
-<h1>Spending</h1>
+@if (!notFound)
+{
+    <div class="page-head">
+        <h1>Spending</h1>
+        <nav class="month-switch" aria-label="Month">
+            @if (CanGoBack)
+            {
+                <a class="button month-button" href="@Href(Previous)" aria-label="Previous month">‹</a>
+            }
+            else
+            {
+                <span class="button month-button" aria-disabled="true" aria-label="Previous month">‹</span>
+            }
+            <span class="month-name" aria-live="polite">@MonthName</span>
+            @if (CanGoForward)
+            {
+                <a class="button month-button" href="@Href(Next)" aria-label="Next month">›</a>
+            }
+            else
+            {
+                <span class="button month-button" aria-disabled="true" aria-label="Next month">›</span>
+            }
+        </nav>
+    </div>
+
+    @if (categories is not null && lines is not null)
+    {
+        <section class="card">
+            @if (categories.Count == 0)
+            {
+                <p class="empty"><a href="/categories">Add a category first</a></p>
+            }
+            else
+            {
+                <form class="entry-form" @onsubmit="Add">
+                    <div class="field field-category">
+                        <label for="add-category">Category</label>
+                        <select id="add-category" @bind="addCategoryId" @bind:after="Typed">
+                            @foreach (var category in categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        @if (addCategoryError is not null)
+                        {
+                            <div class="validation-message">@addCategoryError</div>
+                        }
+                    </div>
+                    <div class="field field-amount">
+                        <label for="add-amount">Amount</label>
+                        <input id="add-amount" inputmode="decimal" autocomplete="off" placeholder="0,00"
+                               @bind="addAmount" @bind:event="oninput" @bind:after="Typed" />
+                        @if (addAmountError is not null)
+                        {
+                            <div class="validation-message">@addAmountError</div>
+                        }
+                    </div>
+                    <div class="field field-note">
+                        <label for="add-note">Note</label>
+                        <input id="add-note" autocomplete="off" @bind="addNote" @bind:event="oninput" @bind:after="Typed" />
+                        @if (addNoteError is not null)
+                        {
+                            <div class="validation-message">@addNoteError</div>
+                        }
+                    </div>
+                    <div class="field field-buttons">
+                        <span class="field-label" aria-hidden="true">&nbsp;</span>
+                        <button type="submit" class="button-primary" disabled="@Locked">Add</button>
+                    </div>
+                </form>
+            }
+        </section>
+
+        <section class="card list-card spending-lines">
+            @if (lines.Count == 0)
+            {
+                <p class="empty">No spending in @MonthName</p>
+            }
+            else
+            {
+                @foreach (var group in groups)
+                {
+                    <div class="group" @key="group.CategoryId">
+                        <div class="group-header">
+                            <span class="dot" style="background: @group.Color"></span>
+                            <span class="group-name">@group.Name</span>
+                            <span class="group-subtotal">@Money.Format(group.SubtotalCents)</span>
+                        </div>
+                        @foreach (var line in group.Lines)
+                        {
+                            <div class="line" @key="line.Id">
+                                @if (editingId == line.Id)
+                                {
+                                    <form class="entry-form line-edit" @onsubmit="SaveEdit" @onkeydown="EditKey">
+                                        <div class="field field-category">
+                                            <select aria-label="Category" @bind="editCategoryId">
+                                                @foreach (var category in categories)
+                                                {
+                                                    <option value="@category.Id">@category.Name</option>
+                                                }
+                                            </select>
+                                            @if (editCategoryError is not null)
+                                            {
+                                                <div class="validation-message">@editCategoryError</div>
+                                            }
+                                        </div>
+                                        <div class="field field-amount">
+                                            <input aria-label="Amount" inputmode="decimal" autocomplete="off" placeholder="0,00"
+                                                   @ref="editAmountInput" @bind="editAmount" @bind:event="oninput" />
+                                            @if (editAmountError is not null)
+                                            {
+                                                <div class="validation-message">@editAmountError</div>
+                                            }
+                                        </div>
+                                        <div class="field field-note">
+                                            <input aria-label="Note" autocomplete="off" @bind="editNote" @bind:event="oninput" />
+                                            @if (editNoteError is not null)
+                                            {
+                                                <div class="validation-message">@editNoteError</div>
+                                            }
+                                        </div>
+                                        <div class="line-actions">
+                                            <button type="submit" class="row-button button-primary" disabled="@Locked">Save</button>
+                                            <button type="button" class="row-button" @onclick="CancelEdit">Cancel</button>
+                                        </div>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="line-amount">@Money.Format(line.AmountCents)</span>
+                                    <span class="line-note">@line.Note</span>
+                                    <span class="line-actions">
+                                        @if (deletingId == line.Id)
+                                        {
+                                            <span class="confirm-text">Delete?</span>
+                                            <button type="button" class="row-button button-danger" disabled="@Locked" @onclick="ConfirmDelete">Yes</button>
+                                            <button type="button" class="row-button" @onclick="CancelDelete">No</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="row-button" disabled="@Locked" @onclick="() => StartEdit(line)">Edit</button>
+                                            <button type="button" class="row-button" disabled="@Locked" @onclick="() => StartDelete(line)">Delete</button>
+                                        }
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                <div class="total-row">
+                    <span>Total</span>
+                    <span class="total-amount">@Money.Format(Total(groups))</span>
+                </div>
+            }
+            @if (listError is not null)
+            {
+                <div class="validation-message">@listError</div>
+            }
+        </section>
+    }
+}
+
+@code {
+    /// <summary>One category's lines in a month, with their subtotal.</summary>
+    public sealed record CategoryGroup(int CategoryId, string Name, string Color, long SubtotalCents, IReadOnlyList<EntryLine> Lines);
+
+    /// <summary>
+    /// Groups <see cref="EntryService.ForMonth"/>'s lines by category, keeping its order: groups by category
+    /// name, lines by Id.
+    /// </summary>
+    public static IReadOnlyList<CategoryGroup> GroupByCategory(IReadOnlyList<EntryLine> lines) =>
+        lines
+            .GroupBy(l => l.CategoryId)
+            .Select(g => new CategoryGroup(
+                g.Key, g.First().CategoryName, g.First().CategoryColor, g.Sum(l => l.AmountCents), g.ToList()))
+            .ToList();
+
+    /// <summary>The month's total: the subtotals added up.</summary>
+    public static long Total(IEnumerable<CategoryGroup> groups) => groups.Sum(g => g.SubtotalCents);
+
+    [Parameter] public int? Year { get; set; }
+
+    [Parameter] public int? Month { get; set; }
+
+    private int year;
+    private int month;
+    private bool notFound;
+
+    private IReadOnlyList<CategorySummary>? categories;
+    private IReadOnlyList<EntryLine>? lines;
+    private IReadOnlyList<CategoryGroup> groups = [];
+
+    private int addCategoryId;
+    private string addAmount = "";
+    private string addNote = "";
+    private string? addCategoryError;
+    private string? addAmountError;
+    private string? addNoteError;
+    private bool justAdded;
+
+    private int? editingId;
+    private int editCategoryId;
+    private string editAmount = "";
+    private string editNote = "";
+    private string? editCategoryError;
+    private string? editAmountError;
+    private string? editNoteError;
+    private bool focusEdit;
+    private ElementReference editAmountInput;
+
+    private int? deletingId;
+    private string? listError;
+    private bool busy;
+
+    // Writes wait for the interactive circuit, and for the save that is running.
+    private bool Locked => busy || !RendererInfo.IsInteractive;
+
+    private string MonthName => new DateTime(year, month, 1).ToString("MMMM yyyy", CultureInfo.InvariantCulture);
+
+    private (int Year, int Month) Previous => month == 1 ? (year - 1, 12) : (year, month - 1);
+
+    private (int Year, int Month) Next => month == 12 ? (year + 1, 1) : (year, month + 1);
+
+    private bool CanGoBack => Previous.Year >= EntryService.MinYear;
+
+    private bool CanGoForward => Next.Year <= EntryService.MaxYear;
+
+    private static string Href((int Year, int Month) target) => $"/spending/{target.Year}/{target.Month}";
+
+    // The page stays the same component when only the address changes: a route without a
+    // year and month must not keep the ones the last address set.
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        Year = null;
+        Month = null;
+        return base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Year is { } routeYear && Month is { } routeMonth)
+        {
+            (year, month) = (routeYear, routeMonth);
+        }
+        else
+        {
+            var now = DateTime.Now;
+            (year, month) = (now.Year, now.Month);
+        }
+
+        if (month is < 1 or > 12 || year is < EntryService.MinYear or > EntryService.MaxYear)
+        {
+            notFound = true;
+            Navigation.NotFound();
+            return;
+        }
+
+        notFound = false;
+        editingId = null;
+        deletingId = null;
+        listError = null;
+        ClearAddErrors();
+        categories = await Categories.List();
+        if (categories.All(c => c.Id != addCategoryId))
+        {
+            addCategoryId = categories.FirstOrDefault()?.Id ?? 0;
+        }
+
+        await LoadLines();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (focusEdit)
+        {
+            focusEdit = false;
+            await editAmountInput.FocusAsync();
+        }
+    }
+
+    private async Task LoadLines()
+    {
+        lines = await Entries.ForMonth(year, month);
+        groups = GroupByCategory(lines);
+    }
+
+    private void Typed() => justAdded = false;
+
+    private void ClearAddErrors()
+    {
+        addCategoryError = null;
+        addAmountError = null;
+        addNoteError = null;
+    }
+
+    private async Task Add()
+    {
+        // justAdded: the second click of a double click can arrive after the first add
+        // finished and cleared the amount; it is not a new add until the user types.
+        if (busy || justAdded)
+        {
+            return;
+        }
+
+        ClearAddErrors();
+        if (!Money.TryParse(addAmount, out var cents))
+        {
+            addAmountError = Money.ParseError;
+            addNoteError = LocalNoteError(addNote);
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Entries.Add(year, month, addCategoryId, cents, addNote);
+            if (result.Ok)
+            {
+                addAmount = "";
+                addNote = "";
+                justAdded = true;
+                listError = null;
+                await LoadLines();
+            }
+            else
+            {
+                (addCategoryError, addAmountError, addNoteError) = Place(result.Error);
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void StartEdit(EntryLine line)
+    {
+        deletingId = null;
+        listError = null;
+        editingId = line.Id;
+        editCategoryId = line.CategoryId;
+        editAmount = Money.ToInput(line.AmountCents);
+        editNote = line.Note ?? "";
+        editCategoryError = null;
+        editAmountError = null;
+        editNoteError = null;
+        focusEdit = true;
+    }
+
+    private void CancelEdit() => editingId = null;
+
+    private async Task SaveEdit()
+    {
+        if (busy || editingId is not { } id)
+        {
+            return;
+        }
+
+        editCategoryError = null;
+        editAmountError = null;
+        editNoteError = null;
+        if (!Money.TryParse(editAmount, out var cents))
+        {
+            editAmountError = Money.ParseError;
+            editNoteError = LocalNoteError(editNote);
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Entries.Update(id, editCategoryId, cents, editNote);
+            if (result.Ok || result.Error == EntryService.NotFound)
+            {
+                editingId = null;
+                listError = result.Error;
+                await LoadLines();
+            }
+            else
+            {
+                (editCategoryError, editAmountError, editNoteError) = Place(result.Error);
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void EditKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            CancelEdit();
+        }
+    }
+
+    private void StartDelete(EntryLine line)
+    {
+        editingId = null;
+        listError = null;
+        deletingId = line.Id;
+    }
+
+    private void CancelDelete() => deletingId = null;
+
+    private async Task ConfirmDelete()
+    {
+        if (busy || deletingId is not { } id)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Entries.Delete(id);
+            deletingId = null;
+            listError = result.Error;
+            await LoadLines();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    // A service message goes under the field it concerns: category, amount or note.
+    private static (string? Category, string? Amount, string? Note) Place(string? error) => error switch
+    {
+        null => (null, null, null),
+        Money.ParseError => (null, error, null),
+        EntryService.NoteTooLong => (null, null, error),
+        _ => (error, null, null),
+    };
+
+    // The note's message when the amount was refused first, so both show at once.
+    private static string? LocalNoteError(string? note) =>
+        (note?.Trim().Length ?? 0) > FinanceApp.Storage.Entry.MaxNoteLength ? EntryService.NoteTooLong : null;
+}

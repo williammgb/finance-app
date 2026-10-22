@@ -162,6 +162,7 @@ usage: ./run <task> [args]
   check   format-check one file:  ./run check path/to/file.cs
   ui      start the app on http://localhost:5080 and run the browser checks in tests/ui
   start   serve the app at http://localhost:5080
+  demo    serve the app at http://localhost:5081 on made-up data, rebuilt from samples/ at every start
 USAGE
 }
 
@@ -179,6 +180,8 @@ case "$task" in
   ui)    gate ui ui_steps "$@" ;;
   check) dotnet format FinanceApp.slnx --verify-no-changes --include "$1" ;;
   start) exec dotnet run --project src/FinanceApp ;;
+  # Its own database (data/demo.db) and port, so it never opens finance.db and runs beside start.
+  demo)  exec dotnet run --project src/FinanceApp -- --Demo true --Urls http://localhost:5081 ;;
   ""|-h|--help|help) usage ;;
   *) echo "run: unknown task '$task'" >&2; usage >&2; exit 1 ;;
 esac

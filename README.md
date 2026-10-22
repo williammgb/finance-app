@@ -16,6 +16,18 @@ Needs the .NET 10 SDK and Git Bash.
 ./run start   # serve the app at http://localhost:5080
 ```
 
+## Demo
+
+```sh
+./run demo    # serve the app at http://localhost:5081 on example data
+```
+
+The demo shows two years of spending (November 2024 to October 2026) in 11 categories, for
+screenshots. The data is made up: it comes from `samples/example-spending.csv`, which is committed.
+The demo runs on its own database, `data/demo.db`, rebuilt from that file at every start, so changes
+made in the demo are gone at the next one and your own `finance.db` is never opened. It runs on its
+own port, beside `./run start`; its browser tab reads "Finance (demo)".
+
 ## Work on it
 
 ```sh

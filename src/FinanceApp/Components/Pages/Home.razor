@@ -1,3 +1,311 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@using System.Text.Json
+@inject SummaryService Summary
 
 <h1>Overview</h1>
+
+@if (!loaded)
+{
+}
+else if (overview is null)
+{
+    <section class="card overview-empty">
+        <p class="empty">No spending yet</p>
+        <a class="button button-primary" href="/spending">Add spending</a>
+    </section>
+}
+else
+{
+    <div class="tiles">
+        <section class="card tile">
+            <h2 class="tile-label">@overview.Latest.Title</h2>
+            <p class="tile-value">@Money.Format(overview.LatestCents)</p>
+        </section>
+        @if (overview.Versus is { } versus)
+        {
+            <section class="card tile">
+                <h2 class="tile-label">vs @versus.Month.Title</h2>
+                <p class="tile-value">@Money.FormatChange(versus.ChangeCents)</p>
+                @if (versus.Percent is { } percent)
+                {
+                    <p class="tile-sub">@SummaryService.FormatPercent(percent)</p>
+                }
+            </section>
+        }
+        <section class="card tile">
+            <h2 class="tile-label">12-month average</h2>
+            <p class="tile-value">@Money.Format(overview.AverageCents)</p>
+        </section>
+    </div>
+
+    <div class="overview-row">
+        <section class="card line-card">
+            <div class="card-head">
+                <h2>Spending per month</h2>
+                <div class="switch" role="group" aria-label="Period">
+                    <button type="button" aria-pressed="@Pressed(period == Period.TwelveMonths)" @onclick="() => Switch(Period.TwelveMonths)">12 months</button>
+                    <button type="button" aria-pressed="@Pressed(period == Period.AllTime)" @onclick="() => Switch(Period.AllTime)">All time</button>
+                </div>
+            </div>
+            <div class="line-chart">
+                @if (totalOn || on.Count > 0)
+                {
+                    <ApexChart @key="chartKey" TItem="MonthTotals" Options="lineOptions" Height="370">
+                        @if (totalOn)
+                        {
+                            <ApexPointSeries TItem="MonthTotals"
+                                             Items="overview.Months"
+                                             Name="Total"
+                                             SeriesType="SeriesType.Line"
+                                             Color="@CategoryColors.Total"
+                                             Stroke="@(new SeriesStroke { Width = 3, Color = CategoryColors.Total })"
+                                             XValue="@(m => m.Month.Label)"
+                                             YValue="@(m => m.TotalCents / 100m)" />
+                        }
+                        @foreach (var category in ShownCategories)
+                        {
+                            <ApexPointSeries @key="category.Id"
+                                             TItem="MonthTotals"
+                                             Items="overview.Months"
+                                             Name="@category.Name"
+                                             SeriesType="SeriesType.Line"
+                                             Color="@category.Color"
+                                             Stroke="@(new SeriesStroke { Width = 2, Color = category.Color })"
+                                             XValue="@(m => m.Month.Label)"
+                                             YValue="@(m => m.CentsOf(category.Id) / 100m)" />
+                        }
+                    </ApexChart>
+                }
+            </div>
+            <div class="legend">
+                <button type="button" class="legend-button" aria-pressed="@Pressed(totalOn)" @onclick="ToggleTotal">
+                    <span class="legend-dot" style="--dot: @CategoryColors.Total"></span>Total
+                </button>
+                @foreach (var category in overview.Categories)
+                {
+                    <button @key="category.Id" type="button" class="legend-button" aria-pressed="@Pressed(on.Contains(category.Id))" @onclick="() => Toggle(category.Id)">
+                        <span class="legend-dot" style="--dot: @category.Color"></span>@category.Name
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section class="card donut-card">
+            <h2>@overview.Latest.Title</h2>
+            @if (overview.Slices.Count == 0)
+            {
+                <p class="empty">Nothing spent in @overview.Latest.Title</p>
+            }
+            else
+            {
+                <div class="donut">
+                    <ApexChart @key="donutKey" TItem="DonutSlice" Options="donutOptions" Height="220" Width="220">
+                        <ApexPointSeries TItem="DonutSlice"
+                                         Items="overview.Slices"
+                                         Name="Spent"
+                                         SeriesType="SeriesType.Donut"
+                                         XValue="@(s => s.Name)"
+                                         YValue="@(s => s.Cents / 100m)" />
+                    </ApexChart>
+                    <div class="donut-total">@Money.Format(overview.LatestCents)</div>
+                </div>
+                <div class="donut-table">
+                    <div class="donut-table-scroll">
+                        <table class="table">
+                            <tbody>
+                                @foreach (var slice in overview.Slices)
+                                {
+                                    <tr>
+                                        <td class="dot-cell"><span class="dot" style="background: @slice.Color"></span></td>
+                                        <td class="slice-name">@slice.Name</td>
+                                        <td class="number">@Money.Format(slice.Cents)</td>
+                                        <td class="number share">@SummaryService.FormatShare(slice.Share)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+}
+
+@code {
+    private const string Font = "\"Segoe UI\", system-ui, sans-serif";
+
+    // `€ 1.000`: the y axis, whole euros.
+    private const string AxisEuros = """
+        function (value) {
+            return '€ ' + new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 0 }).format(value);
+        }
+        """;
+
+    // `€ 2.420,00`: the donut's tooltip.
+    private const string Euros = """
+        function (value) {
+            return '€ ' + new Intl.NumberFormat('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+        }
+        """;
+
+    private Overview? overview;
+    private bool loaded;
+    private bool busy;
+    private Period period = Period.TwelveMonths;
+    private bool totalOn = true;
+    private HashSet<int> on = [];
+    private ApexChartOptions<MonthTotals> lineOptions = new();
+    private ApexChartOptions<DonutSlice> donutOptions = new();
+    private int chartKey;
+    private int donutKey;
+
+    private IEnumerable<SummaryCategory> ShownCategories =>
+        overview?.Categories.Where(c => on.Contains(c.Id)) ?? [];
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        overview = await Summary.Load(period);
+        loaded = true;
+        if (overview is null)
+        {
+            return;
+        }
+
+        on = overview.Categories.Take(SummaryService.ShownByDefault).Select(c => c.Id).ToHashSet();
+        donutOptions = DonutOptions(overview);
+        donutKey++;
+        Redraw();
+    }
+
+    private async Task Switch(Period to)
+    {
+        if (busy || to == period)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            period = to;
+            await Load();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void ToggleTotal()
+    {
+        totalOn = !totalOn;
+        Redraw();
+    }
+
+    private void Toggle(int categoryId)
+    {
+        if (!on.Remove(categoryId))
+        {
+            on.Add(categoryId);
+        }
+
+        Redraw();
+    }
+
+    // The series change with the legend, so the chart is drawn anew under a new key.
+    private void Redraw()
+    {
+        lineOptions = LineOptions(overview!, totalOn);
+        chartKey++;
+    }
+
+    private static string Pressed(bool value) => value ? "true" : "false";
+
+    private static ApexChartOptions<MonthTotals> LineOptions(Overview overview, bool totalFirst) => new()
+    {
+        Chart = new Chart
+        {
+            FontFamily = Font,
+            ForeColor = "#5f5e5a",
+            Toolbar = new Toolbar { Show = false },
+            Zoom = new Zoom { Enabled = false },
+            Animations = new Animations { Enabled = false },
+        },
+        Legend = new Legend { Show = false },
+        Markers = new Markers
+        {
+            Size = overview.Months.Count == 1 ? 5 : 0,
+            StrokeWidth = 0,
+            Hover = new MarkersHover { Size = 5 },
+        },
+        Grid = new Grid { BorderColor = "#efeeea" },
+        Stroke = new Stroke { Curve = Curve.Straight },
+        Tooltip = new Tooltip
+        {
+            Shared = true,
+            Intersect = false,
+            Custom = TooltipFunction(overview.Months, totalFirst),
+        },
+        Xaxis = new XAxis
+        {
+            Crosshairs = new AxisCrosshairs
+            {
+                Show = true,
+                Width = 1,
+                Stroke = new CrosshairStroke { Color = "#8f8e89", DashArray = 4, Width = 1 },
+            },
+            Tooltip = new XAxisTooltip { Enabled = false },
+            Labels = new XAxisLabels { Rotate = 0, HideOverlappingLabels = true },
+        },
+        Yaxis = [new YAxis { Min = 0, Labels = new YAxisLabels { Formatter = AxisEuros } }],
+    };
+
+    private static ApexChartOptions<DonutSlice> DonutOptions(Overview overview) => new()
+    {
+        Chart = new Chart
+        {
+            FontFamily = Font,
+            Toolbar = new Toolbar { Show = false },
+            Animations = new Animations { Enabled = false },
+        },
+        Colors = overview.Slices.Select(s => s.Color).ToList(),
+        Legend = new Legend { Show = false },
+        DataLabels = new DataLabels { Enabled = false },
+        Stroke = new Stroke { Width = 2, Colors = ["#ffffff"] },
+        PlotOptions = new PlotOptions { Pie = new PlotOptionsPie { Donut = new PlotOptionsDonut { Size = "70%" } } },
+        Tooltip = new Tooltip { Y = new TooltipY { Formatter = Euros } },
+    };
+
+    // The shared tooltip: month and year, then Total, then each shown category largest first.
+    private static string TooltipFunction(IReadOnlyList<MonthTotals> months, bool totalFirst)
+    {
+        var titles = JsonSerializer.Serialize(months.Select(m => m.Month.Title));
+        var first = totalFirst ? "true" : "false";
+        return $$"""
+            function ({ series, dataPointIndex, w }) {
+                var titles = {{titles}};
+                var totalFirst = {{first}};
+                var euro = new Intl.NumberFormat('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                var esc = function (text) {
+                    return String(text).replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; });
+                };
+                var rows = series.map(function (values, i) {
+                    return { i: i, name: w.globals.seriesNames[i], color: w.globals.colors[i], value: values[dataPointIndex] || 0 };
+                });
+                var head = totalFirst ? rows.slice(0, 1) : [];
+                var rest = (totalFirst ? rows.slice(1) : rows).sort(function (a, b) { return b.value - a.value || a.i - b.i; });
+                var html = '<div class="chart-tooltip"><div class="chart-tooltip-title">' + esc(titles[dataPointIndex]) + '</div>';
+                head.concat(rest).forEach(function (row) {
+                    html += '<div class="chart-tooltip-row' + (totalFirst && row.i === 0 ? ' chart-tooltip-total' : '') + '">'
+                        + '<span class="dot" style="background:' + esc(row.color) + '"></span>'
+                        + '<span class="chart-tooltip-name">' + esc(row.name) + '</span>'
+                        + '<span class="chart-tooltip-value">€ ' + euro.format(row.value) + '</span></div>';
+                });
+                return html + '</div>';
+            }
+            """;
+    }
+}

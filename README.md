@@ -28,6 +28,12 @@ The demo runs on its own database, `data/demo.db`, rebuilt from that file at eve
 made in the demo are gone at the next one and your own `finance.db` is never opened. It runs on its
 own port, beside `./run start`; its browser tab reads "Finance (demo)".
 
+## Screenshot
+
+The overview page on the demo data:
+
+![The overview page: the latest month's total, the change against the month before and the 12-month average, a line chart of spending per month and a donut chart of the latest month](docs/overview.png)
+
 ## Work on it
 
 ```sh

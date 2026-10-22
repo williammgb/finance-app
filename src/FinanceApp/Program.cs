@@ -1,3 +1,4 @@
+using ApexCharts;
 using FinanceApp.Components;
 using FinanceApp.Services;
 using FinanceApp.Storage;
@@ -49,6 +50,8 @@ builder.Services.AddDbContextFactory<FinanceDb>(options => options.UseSqlite(con
 builder.Services.AddSingleton<CategoryService>();
 builder.Services.AddSingleton<EntryService>();
 builder.Services.AddSingleton<TransferService>();
+builder.Services.AddSingleton<SummaryService>();
+builder.Services.AddApexCharts();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

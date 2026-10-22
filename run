@@ -62,31 +62,51 @@ fast_steps() {
 }
 
 smoke_url=http://localhost:5099
+ui_url=http://localhost:5080
 
-# Start the built app on the smoke port, wait for / to answer 200, check the page
-# is the overview, run $SMOKE_RUN against it when set, and stop the app either way.
-smoke_steps() {
-  mkdir -p .work/gates
-  applog=.work/gates/smoke-app.log
-  ( cd src/FinanceApp && ASPNETCORE_ENVIRONMENT=Development exec dotnet bin/Debug/net10.0/FinanceApp.dll --urls "$smoke_url" ) > "$applog" 2>&1 &
+# start_app <url> <log>: start the built app at <url> and wait up to 30 s for / to
+# answer 200. Sets $app to its process; prints the log and returns 1 when it never
+# answers. stop_app stops it either way. Refuses to start when something already
+# answers on <url> — an older ./run start, say — since that server, not the build
+# just made, would answer the checks.
+start_app() {
+  app=
+  busy=$(curl -s -o /dev/null --max-time 2 -w '%{http_code}' "$1/" || true)
+  if [ -n "$busy" ] && [ "$busy" != 000 ]; then
+    echo "port in use: something already answers on $1 (stop it, e.g. an older ./run start, and run again)"
+    return 1
+  fi
+  ( cd src/FinanceApp && ASPNETCORE_ENVIRONMENT=Development exec dotnet bin/Debug/net10.0/FinanceApp.dll --urls "$1" ) > "$2" 2>&1 &
   app=$!
-  status=0
   i=0
-  answered=no
   while [ "$i" -lt 30 ]; do
-    http=$(curl -s -o /dev/null --max-time 2 -w '%{http_code}' "$smoke_url/" || true)
-    if [ "$http" = 200 ]; then answered=yes; break; fi
-    if ! kill -0 "$app" 2>/dev/null; then break; fi
+    http=$(curl -s -o /dev/null --max-time 2 -w '%{http_code}' "$1/" || true)
+    [ "$http" = 200 ] && return 0
+    kill -0 "$app" 2>/dev/null || break
     sleep 1
     i=$((i + 1))
   done
-  if [ "$answered" = no ]; then
-    cat "$applog"
-    if kill -0 "$app" 2>/dev/null; then
-      echo "smoke: app did not answer on $smoke_url within 30 s"
-    else
-      echo "smoke: app exited before answering on $smoke_url"
-    fi
+  cat "$2"
+  if kill -0 "$app" 2>/dev/null; then
+    echo "app did not answer on $1 within 30 s"
+  else
+    echo "app exited before answering on $1"
+  fi
+  return 1
+}
+
+stop_app() {
+  [ -n "${app:-}" ] || return 0
+  kill "$app" 2>/dev/null || true
+  wait "$app" 2>/dev/null || true
+}
+
+# Start the built app on the smoke port, check the page is the overview, run
+# $SMOKE_RUN against it when set, and stop the app either way.
+smoke_steps() {
+  mkdir -p .work/gates
+  status=0
+  if ! start_app "$smoke_url" .work/gates/smoke-app.log; then
     status=1
   else
     html=$(curl -s --max-time 5 "$smoke_url/" || true)
@@ -99,8 +119,7 @@ smoke_steps() {
       sh -c "$SMOKE_RUN" || status=$?
     fi
   fi
-  kill "$app" 2>/dev/null || true
-  wait "$app" 2>/dev/null || true
+  stop_app
   [ "$status" -eq 0 ] && echo "smoke: passed"
   return "$status"
 }
@@ -108,6 +127,22 @@ smoke_steps() {
 smoke_alone() {
   dotnet build src/FinanceApp -warnaserror -nologo -v q || return 1
   smoke_steps
+}
+
+# Build, start the app on $ui_url, run the Playwright scripts in tests/ui (they save
+# their screenshots to .work/screens), and stop the app either way.
+ui_steps() {
+  dotnet build src/FinanceApp -warnaserror -nologo -v q || return 1
+  [ -d node_modules/@playwright/test ] || npm ci || return 1
+  mkdir -p .work/gates .work/screens
+  status=0
+  if start_app "$ui_url" .work/gates/ui-app.log; then
+    UI_URL="$ui_url" npx playwright test "$@" || status=$?
+  else
+    status=1
+  fi
+  stop_app
+  return "$status"
 }
 
 full_steps() {
@@ -125,6 +160,7 @@ usage: ./run <task> [args]
   full    the full gate — fast, format check, smoke
   smoke   start the real app on http://localhost:5099 and prove it serves the overview
   check   format-check one file:  ./run check path/to/file.cs
+  ui      start the app on http://localhost:5080 and run the browser checks in tests/ui
   start   serve the app at http://localhost:5080
 USAGE
 }
@@ -134,12 +170,13 @@ task="${1:-}"
 filtered=$#
 
 case "$task" in
-  setup) dotnet tool restore && dotnet restore FinanceApp.slnx --locked-mode ;;
+  setup) dotnet tool restore && dotnet restore FinanceApp.slnx --locked-mode && npm ci && npx playwright install chromium ;;
   fast)  gate fast fast_steps "$@" ;;
   full)  gate full full_steps ;;
   # When SMOKE_RUN is set, run it against the started app and fail when it fails:
   # /implement proves a new command with SMOKE_RUN="<command>" ./run smoke.
   smoke) gate smoke smoke_alone ;;
+  ui)    gate ui ui_steps "$@" ;;
   check) dotnet format FinanceApp.slnx --verify-no-changes --include "$1" ;;
   start) exec dotnet run --project src/FinanceApp ;;
   ""|-h|--help|help) usage ;;

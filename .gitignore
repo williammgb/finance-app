@@ -7,3 +7,6 @@ data/
 *.db-wal
 .playwright-mcp/
 TestResults/
+node_modules/
+test-results/
+playwright-report/

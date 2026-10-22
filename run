@@ -66,8 +66,16 @@ ui_url=http://localhost:5080
 
 # start_app <url> <log>: start the built app at <url> and wait up to 30 s for / to
 # answer 200. Sets $app to its process; prints the log and returns 1 when it never
-# answers. stop_app stops it either way.
+# answers. stop_app stops it either way. Refuses to start when something already
+# answers on <url> — an older ./run start, say — since that server, not the build
+# just made, would answer the checks.
 start_app() {
+  app=
+  busy=$(curl -s -o /dev/null --max-time 2 -w '%{http_code}' "$1/" || true)
+  if [ -n "$busy" ] && [ "$busy" != 000 ]; then
+    echo "port in use: something already answers on $1 (stop it, e.g. an older ./run start, and run again)"
+    return 1
+  fi
   ( cd src/FinanceApp && ASPNETCORE_ENVIRONMENT=Development exec dotnet bin/Debug/net10.0/FinanceApp.dll --urls "$1" ) > "$2" 2>&1 &
   app=$!
   i=0
@@ -88,6 +96,7 @@ start_app() {
 }
 
 stop_app() {
+  [ -n "${app:-}" ] || return 0
   kill "$app" 2>/dev/null || true
   wait "$app" 2>/dev/null || true
 }

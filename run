@@ -1,0 +1,147 @@
+#!/bin/sh
+# One entrypoint for this project. Every command a person or an agent runs goes
+# through here: one place to look, one thing to allowlist, one thing that can't
+# drift from what the project's registry entry claims the gates are.
+set -eu
+
+# A gate that passes stamps .work/gates/<task>.stamp. The commit hook compares
+# those stamps against the files being committed and refuses a commit the fast
+# gate never saw — gate output older than the code it is quoted as proving is not
+# evidence.
+stamp() {
+  mkdir -p .work/gates
+  date -u +%Y-%m-%dT%H:%M:%SZ > ".work/gates/$1.stamp"
+}
+
+# One line in .work/JOURNAL.md, the project's record of what was tested. A gate run
+# with the same result as the line just above it adds nothing, so the builder's
+# inner loop of fast-gate reruns does not bury everything else.
+journal() {
+  file=.work/JOURNAL.md
+  [ -f "$file" ] || return 0
+  last=$(grep -v '^[[:space:]]*$' "$file" | tail -n 1)
+  case "$last" in "- ${1%% (*}"*) return 0 ;; esac
+  [ -z "$(tail -c 1 "$file")" ] || echo >> "$file"
+  printf -- '- %s\n' "$1" >> "$file"
+}
+
+# gate <name> <command...>
+# Runs one gate with its output shown as it goes. A filtered run (./run fast --filter x)
+# proved a subset, not the gate, so it neither stamps nor writes to the journal. A
+# full run stamps when it passes, and journals either way with the last line the
+# command printed — for most test runners, the count.
+gate() {
+  name=$1; shift
+  if [ "$filtered" -gt 0 ]; then "$@"; return; fi
+  mkdir -p .work/gates
+  log=".work/gates/$name.log"
+  rm -f "$log.code"
+  started=$(date +%s)
+  { "$@" && echo 0 > "$log.code" || echo $? > "$log.code"; } 2>&1 | tee "$log"
+  code=$(cat "$log.code" 2>/dev/null || echo 1)
+  took=$(( $(date +%s) - started ))
+  if [ "$code" -eq 0 ]; then result=passed; stamp "$name"; else result=failed; fi
+  said=$(grep -v '^[[:space:]]*$' "$log" | tail -n 1 | tr -d '\033' | cut -c1-160)
+  journal "$name gate $result (${took}s): $said"
+  return "$code"
+}
+
+# The repo is public: no database and nothing under a data/ folder may ever be
+# tracked, force-added or not. Runs before anything is built.
+data_guard() {
+  tracked=$(git ls-files | grep -E '(^|/)data/|\.db(-shm|-wal)?$' || true)
+  [ -z "$tracked" ] && return 0
+  printf '%s\n' "$tracked" | sed 's/^/data file tracked: /'
+  return 1
+}
+
+fast_steps() {
+  data_guard || return 1
+  dotnet build FinanceApp.slnx -warnaserror -nologo || return 1
+  dotnet test FinanceApp.slnx --no-build --nologo "$@"
+}
+
+smoke_url=http://localhost:5099
+
+# Start the built app on the smoke port, wait for / to answer 200, check the page
+# is the overview, run $SMOKE_RUN against it when set, and stop the app either way.
+smoke_steps() {
+  mkdir -p .work/gates
+  applog=.work/gates/smoke-app.log
+  ( cd src/FinanceApp && ASPNETCORE_ENVIRONMENT=Development exec dotnet bin/Debug/net10.0/FinanceApp.dll --urls "$smoke_url" ) > "$applog" 2>&1 &
+  app=$!
+  status=0
+  i=0
+  answered=no
+  while [ "$i" -lt 30 ]; do
+    http=$(curl -s -o /dev/null --max-time 2 -w '%{http_code}' "$smoke_url/" || true)
+    if [ "$http" = 200 ]; then answered=yes; break; fi
+    if ! kill -0 "$app" 2>/dev/null; then break; fi
+    sleep 1
+    i=$((i + 1))
+  done
+  if [ "$answered" = no ]; then
+    cat "$applog"
+    if kill -0 "$app" 2>/dev/null; then
+      echo "smoke: app did not answer on $smoke_url within 30 s"
+    else
+      echo "smoke: app exited before answering on $smoke_url"
+    fi
+    status=1
+  else
+    html=$(curl -s --max-time 5 "$smoke_url/" || true)
+    case "$html" in
+      *Overview*) echo "smoke: found Overview on $smoke_url/" ;;
+      *) echo "smoke: $smoke_url/ answered without Overview"; status=1 ;;
+    esac
+    if [ "$status" -eq 0 ] && [ -n "${SMOKE_RUN:-}" ]; then
+      echo "smoke: running $SMOKE_RUN"
+      sh -c "$SMOKE_RUN" || status=$?
+    fi
+  fi
+  kill "$app" 2>/dev/null || true
+  wait "$app" 2>/dev/null || true
+  [ "$status" -eq 0 ] && echo "smoke: passed"
+  return "$status"
+}
+
+smoke_alone() {
+  dotnet build src/FinanceApp -warnaserror -nologo -v q || return 1
+  smoke_steps
+}
+
+full_steps() {
+  fast_steps || return 1
+  dotnet format FinanceApp.slnx --verify-no-changes || return 1
+  smoke_steps
+}
+
+usage() {
+  cat <<'USAGE'
+usage: ./run <task> [args]
+
+  setup   restore the local tools and the locked NuGet packages
+  fast    the fast gate — data-file guard, build (warnings as errors), tests
+  full    the full gate — fast, format check, smoke
+  smoke   start the real app on http://localhost:5099 and prove it serves the overview
+  check   format-check one file:  ./run check path/to/file.cs
+  start   serve the app at http://localhost:5080
+USAGE
+}
+
+task="${1:-}"
+[ $# -gt 0 ] && shift
+filtered=$#
+
+case "$task" in
+  setup) dotnet tool restore && dotnet restore FinanceApp.slnx --locked-mode ;;
+  fast)  gate fast fast_steps "$@" ;;
+  full)  gate full full_steps ;;
+  # When SMOKE_RUN is set, run it against the started app and fail when it fails:
+  # /implement proves a new command with SMOKE_RUN="<command>" ./run smoke.
+  smoke) gate smoke smoke_alone ;;
+  check) dotnet format FinanceApp.slnx --verify-no-changes --include "$1" ;;
+  start) exec dotnet run --project src/FinanceApp ;;
+  ""|-h|--help|help) usage ;;
+  *) echo "run: unknown task '$task'" >&2; usage >&2; exit 1 ;;
+esac

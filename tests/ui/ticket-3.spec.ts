@@ -50,8 +50,9 @@ test('desktop: each menu link opens its titled page and is highlighted', async (
     await expect(page).toHaveURL(new RegExp(`${p.path}$`));
     const h1 = page.locator('main h1');
     await expect(h1).toHaveText(p.title);
-    expect(await style(page, 'main h1', 'font-size')).toBe('28px');
-    expect(await style(page, 'main h1', 'font-weight')).toBe('700');
+    // An interactive page replaces its prerendered markup when the circuit starts: retry the read.
+    await expect.poll(() => style(page, 'main h1', 'font-size')).toBe('28px');
+    await expect.poll(() => style(page, 'main h1', 'font-weight')).toBe('700');
     await expect(page).toHaveTitle('Finance');
 
     const active = page.locator('.sidebar .nav-link.active');
@@ -93,12 +94,16 @@ test('phone: the menu stacks above the content with no sideways scroll', async (
 });
 
 test('an unknown address shows Page not found inside the layout', async ({ page }) => {
-  for (const [path, screen] of [['/nope', 'not-found'], ['/spending/2026/10', 'not-found-month']]) {
+  // The menu's Spending link matches any /spending/… address by prefix, a month that does not exist too.
+  for (const [path, screen, active] of [
+    ['/nope', 'not-found', []],
+    ['/spending/2026/13', 'not-found-month', ['Spending']],
+  ] as const) {
     await page.goto(path);
     await expect(page.locator('main h1')).toHaveText('Page not found');
     await expect(page.locator('.sidebar .brand')).toHaveText('Finance');
     await expect(page.locator('.sidebar .nav-link')).toHaveCount(4);
-    await expect(page.locator('.sidebar .nav-link.active')).toHaveCount(0);
+    await expect(page.locator('.sidebar .nav-link.active')).toHaveText([...active]);
     await expect(page).toHaveTitle('Finance');
     await page.screenshot({ path: `${screens}/ticket-3-${screen}.png`, fullPage: true });
   }

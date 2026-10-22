@@ -1,3 +1,217 @@
 @page "/data"
+@rendermode InteractiveServer
+@using System.Globalization
+@using FinanceApp.Services
+@inject TransferService Transfer
+@inject IJSRuntime JS
 
 <h1>Data</h1>
+
+<section class="card data-card">
+    <h2>Export</h2>
+    <div class="data-row">
+        <span id="export-summary" class="data-summary">@current?.AppText</span>
+        <button type="button" class="button-primary" disabled="@Locked" @onclick="Download">Download CSV</button>
+    </div>
+    @if (exportError is not null)
+    {
+        <div class="validation-message">@exportError</div>
+    }
+</section>
+
+<section class="card data-card">
+    <h2>Import</h2>
+    <div class="file-row">
+        <label class="button" for="csv-file" aria-disabled="@(Locked ? "true" : null)">Choose CSV file</label>
+        <InputFile id="csv-file" class="file-input" accept=".csv,text/csv" disabled="@Locked" OnChange="Choose" />
+        @if (fileName is not null)
+        {
+            <span class="file-name">@fileName</span>
+        }
+    </div>
+    @if (problems.Count > 0)
+    {
+        <ul class="problems">
+            @foreach (var problem in problems)
+            {
+                <li>@problem</li>
+            }
+        </ul>
+    }
+    else if (fileSummary is not null)
+    {
+        <div class="import-result">
+            <p id="file-summary" class="data-summary">@fileSummary.Text</p>
+            @if (imported is not null)
+            {
+                <p class="imported">@imported</p>
+            }
+            else if (confirming && current is not null)
+            {
+                <div class="confirm-box">
+                    <span class="confirm-text">Replace all @DataSummary.Count(current.Lines, "line", "lines") and @DataSummary.Count(current.Categories, "category", "categories")?</span>
+                    <button type="button" class="button-danger" disabled="@Locked" @onclick="Replace">Yes, replace</button>
+                    <button type="button" disabled="@Locked" @onclick="Cancel">Cancel</button>
+                </div>
+            }
+            else if (current?.IsEmpty == true)
+            {
+                <button type="button" class="button-primary" disabled="@Locked" @onclick="Import">Import</button>
+            }
+            else
+            {
+                <button type="button" disabled="@Locked" @onclick="AskReplace">Replace all data</button>
+            }
+            @if (importError is not null)
+            {
+                <div class="validation-message">@importError</div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private DataSummary? current;
+    private CsvData? parsed;
+    private DataSummary? fileSummary;
+    private IReadOnlyList<string> problems = [];
+    private string? fileName;
+    private string? imported;
+    private string? importError;
+    private string? exportError;
+    private bool confirming;
+    private bool busy;
+    private DateTime lastDownload = DateTime.MinValue;
+
+    // Every action waits for the interactive circuit, and for the action that is running.
+    private bool Locked => busy || !RendererInfo.IsInteractive;
+
+    // Only reads: the page loads twice (prerender, then live), and nothing is written while loading.
+    protected override async Task OnInitializedAsync() => current = await Transfer.Current();
+
+    private async Task Download()
+    {
+        // The second click of a double click arrives after a quick download finished: one file a second.
+        if (busy || DateTime.UtcNow - lastDownload < TimeSpan.FromSeconds(1))
+        {
+            return;
+        }
+
+        busy = true;
+        exportError = null;
+        try
+        {
+            var bytes = await Transfer.Export();
+            var name = "finance-export-" + DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".csv";
+            await JS.InvokeVoidAsync("downloadFile", name, bytes);
+            lastDownload = DateTime.UtcNow;
+        }
+        catch (JSException e)
+        {
+            exportError = e.Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task Choose(InputFileChangeEventArgs e)
+    {
+        if (busy)
+        {
+            return;
+        }
+
+        busy = true;
+        fileName = e.File.Name;
+        parsed = null;
+        fileSummary = null;
+        problems = [];
+        imported = null;
+        importError = null;
+        confirming = false;
+        try
+        {
+            if (CsvFormat.CheckSize(e.File.Size) is { } tooLarge)
+            {
+                problems = [tooLarge];
+                return;
+            }
+
+            using var memory = new MemoryStream();
+            await using (var stream = e.File.OpenReadStream(CsvFormat.MaxBytes))
+            {
+                await stream.CopyToAsync(memory);
+            }
+
+            var read = CsvFormat.Read(CsvFormat.Decode(memory.ToArray()));
+            if (!read.Ok)
+            {
+                problems = read.Errors;
+                return;
+            }
+
+            parsed = read.Data;
+            fileSummary = await Transfer.Summarize(read.Data);
+            current = await Transfer.Current();
+        }
+        catch (IOException ex)
+        {
+            problems = [ex.Message];
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void AskReplace()
+    {
+        confirming = true;
+        importError = null;
+    }
+
+    private void Cancel() => confirming = false;
+
+    private Task Import() => Write(Transfer.Import);
+
+    private Task Replace() => Write(Transfer.Replace);
+
+    private async Task Write(Func<CsvData, Task<Result>> write)
+    {
+        // The second click of a double click finds the import done, or the button disabled.
+        if (busy || parsed is null || imported is not null)
+        {
+            return;
+        }
+
+        busy = true;
+        importError = null;
+        try
+        {
+            var result = await write(parsed);
+            if (result.Ok)
+            {
+                confirming = false;
+                imported = "Imported " + DataSummary.Count(parsed.Lines.Count, "line", "lines")
+                    + " and " + DataSummary.Count(parsed.Categories.Count, "category", "categories");
+            }
+            else
+            {
+                importError = result.Error;
+            }
+        }
+        catch (Exception ex)
+        {
+            // The transaction rolled back: the data is as before.
+            importError = "Import failed: " + (ex.InnerException ?? ex).Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+
+        current = await Transfer.Current();
+    }
+}

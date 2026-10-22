@@ -1,0 +1,526 @@
+﻿Year,Month,Category,Amount,Note
+,,Groceries,,
+,,Eating out,,
+,,Rent,,
+,,Health,,
+,,Clothing,,
+,,Entertainment,,
+,,Subscriptions,,
+,,Gifts,,
+,,Sport,,
+,,Transport,,
+,,Utilities,,
+2024,11,Groceries,35.81,
+2024,11,Groceries,106.66,
+2024,11,Groceries,46.12,
+2024,11,Groceries,101.24,
+2024,11,Eating out,23.18,
+2024,11,Eating out,44.62,
+2024,11,Rent,950.00,
+2024,11,Health,35.70,
+2024,11,Health,22.63,
+2024,11,Clothing,43.88,
+2024,11,Clothing,26.39,
+2024,11,Entertainment,17.86,Cinema
+2024,11,Subscriptions,12.99,Streaming
+2024,11,Subscriptions,10.99,Music
+2024,11,Gifts,35.38,Birthday
+2024,11,Transport,13.10,
+2024,11,Transport,45.96,
+2024,11,Utilities,146.48,Energy
+2024,11,Utilities,45.00,Internet
+2024,12,Groceries,96.71,
+2024,12,Groceries,58.13,
+2024,12,Groceries,96.82,
+2024,12,Eating out,23.11,
+2024,12,Rent,950.00,
+2024,12,Health,9.26,
+2024,12,Health,36.52,
+2024,12,Clothing,45.45,
+2024,12,Clothing,77.57,
+2024,12,Entertainment,30.15,
+2024,12,Subscriptions,12.99,Streaming
+2024,12,Subscriptions,10.99,Music
+2024,12,Gifts,133.42,Christmas presents
+2024,12,Gifts,38.68,
+2024,12,Transport,19.33,
+2024,12,Utilities,120.67,Energy
+2024,12,Utilities,45.00,Internet
+2025,1,Groceries,74.39,
+2025,1,Groceries,87.43,
+2025,1,Groceries,76.41,
+2025,1,Eating out,51.83,
+2025,1,Eating out,17.50,
+2025,1,Eating out,56.52,
+2025,1,Rent,950.00,
+2025,1,Health,33.76,
+2025,1,Clothing,47.88,
+2025,1,Clothing,57.89,
+2025,1,Entertainment,10.68,Cinema
+2025,1,Entertainment,25.02,
+2025,1,Subscriptions,12.99,Streaming
+2025,1,Subscriptions,10.99,Music
+2025,1,Gifts,18.67,Birthday
+2025,1,Transport,46.33,
+2025,1,Utilities,151.80,Energy
+2025,1,Utilities,45.00,Internet
+2025,1,Utilities,33.75,Water
+2025,2,Groceries,85.59,
+2025,2,Groceries,87.94,
+2025,2,Groceries,73.12,
+2025,2,Eating out,55.72,
+2025,2,Eating out,44.86,
+2025,2,Rent,950.00,
+2025,2,Health,25.54,Pharmacy
+2025,2,Health,44.09,
+2025,2,Clothing,30.67,
+2025,2,Clothing,69.46,
+2025,2,Entertainment,40.73,Cinema
+2025,2,Entertainment,31.15,
+2025,2,Subscriptions,12.99,Streaming
+2025,2,Subscriptions,10.99,Music
+2025,2,Gifts,19.16,Birthday
+2025,2,Transport,27.39,
+2025,2,Transport,54.38,
+2025,2,Utilities,159.52,Energy
+2025,2,Utilities,45.00,Internet
+2025,3,Groceries,87.05,
+2025,3,Groceries,112.60,
+2025,3,Groceries,81.51,
+2025,3,Groceries,42.36,
+2025,3,Eating out,21.44,
+2025,3,Rent,950.00,
+2025,3,Health,39.00,
+2025,3,Health,92.90,"Dentist, check-up"
+2025,3,Clothing,20.84,
+2025,3,Clothing,66.65,
+2025,3,Entertainment,26.88,
+2025,3,Entertainment,27.73,Cinema
+2025,3,Entertainment,29.02,Concert
+2025,3,Subscriptions,12.99,Streaming
+2025,3,Subscriptions,10.99,Music
+2025,3,Gifts,22.86,
+2025,3,Sport,34.50,Gym membership
+2025,3,Transport,30.32,
+2025,3,Transport,52.86,
+2025,3,Utilities,145.49,Energy
+2025,3,Utilities,45.00,Internet
+2025,4,Groceries,89.56,
+2025,4,Groceries,39.50,
+2025,4,Groceries,80.37,
+2025,4,Eating out,44.45,
+2025,4,Eating out,27.61,
+2025,4,Eating out,20.91,
+2025,4,Rent,950.00,
+2025,4,Health,21.52,Pharmacy
+2025,4,Health,39.05,
+2025,4,Clothing,82.94,
+2025,4,Clothing,74.06,
+2025,4,Clothing,125.42,"Season sale, shoes"
+2025,4,Entertainment,20.54,
+2025,4,Subscriptions,12.99,Streaming
+2025,4,Subscriptions,10.99,Music
+2025,4,Gifts,28.78,
+2025,4,Sport,34.50,
+2025,4,Sport,28.80,Running shoes
+2025,4,Transport,18.31,
+2025,4,Utilities,73.22,Energy
+2025,4,Utilities,45.00,Internet
+2025,5,Groceries,104.71,
+2025,5,Groceries,81.79,
+2025,5,Groceries,81.50,
+2025,5,Groceries,105.90,
+2025,5,Eating out,21.78,
+2025,5,Eating out,20.62,
+2025,5,Rent,950.00,
+2025,5,Health,35.59,
+2025,5,Health,8.56,
+2025,5,Clothing,21.07,
+2025,5,Clothing,32.00,
+2025,5,Entertainment,27.87,
+2025,5,Entertainment,11.82,Concert
+2025,5,Subscriptions,12.99,Streaming
+2025,5,Subscriptions,10.99,Music
+2025,5,Gifts,24.38,Birthday
+2025,5,Sport,34.50,
+2025,5,Sport,50.81,Running shoes
+2025,5,Transport,18.15,
+2025,5,Transport,62.03,
+2025,5,Transport,55.33,
+2025,5,Utilities,91.21,Energy
+2025,5,Utilities,45.00,Internet
+2025,6,Groceries,106.58,
+2025,6,Groceries,73.03,
+2025,6,Groceries,46.80,
+2025,6,Eating out,19.59,
+2025,6,Rent,950.00,
+2025,6,Health,37.47,
+2025,6,Health,21.58,
+2025,6,Clothing,23.95,
+2025,6,Entertainment,30.73,
+2025,6,Entertainment,11.09,Cinema
+2025,6,Subscriptions,12.99,Streaming
+2025,6,Subscriptions,10.99,Music
+2025,6,Subscriptions,2.99,Cloud storage
+2025,6,Gifts,26.59,
+2025,6,Sport,34.50,
+2025,6,Sport,49.11,
+2025,6,Transport,22.60,
+2025,6,Transport,43.36,
+2025,6,Transport,22.08,
+2025,6,Utilities,88.98,Energy
+2025,6,Utilities,45.00,Internet
+2025,7,Groceries,75.66,
+2025,7,Groceries,88.30,
+2025,7,Groceries,55.03,
+2025,7,Eating out,21.24,
+2025,7,Eating out,40.91,
+2025,7,Eating out,44.06,
+2025,7,Rent,950.00,
+2025,7,Health,34.43,
+2025,7,Health,35.48,
+2025,7,Clothing,82.82,
+2025,7,Clothing,35.99,
+2025,7,Entertainment,22.31,
+2025,7,Subscriptions,12.99,Streaming
+2025,7,Subscriptions,10.99,Music
+2025,7,Subscriptions,2.99,Cloud storage
+2025,7,Gifts,22.91,Birthday
+2025,7,Sport,34.50,
+2025,7,Transport,41.37,
+2025,7,Utilities,90.76,Energy
+2025,7,Utilities,45.00,Internet
+2025,7,Utilities,29.58,Water
+2025,8,Groceries,73.70,
+2025,8,Groceries,85.80,
+2025,8,Groceries,83.71,
+2025,8,Groceries,72.93,
+2025,8,Eating out,38.54,
+2025,8,Eating out,27.59,
+2025,8,Rent,950.00,
+2025,8,Health,15.04,Pharmacy
+2025,8,Health,19.22,
+2025,8,Clothing,72.21,
+2025,8,Entertainment,11.31,Concert
+2025,8,Entertainment,35.99,Concert
+2025,8,Entertainment,18.97,
+2025,8,Subscriptions,12.99,Streaming
+2025,8,Subscriptions,10.99,Music
+2025,8,Subscriptions,2.99,Cloud storage
+2025,8,Gifts,38.07,
+2025,8,Sport,34.50,
+2025,8,Transport,41.38,
+2025,8,Transport,59.87,
+2025,8,Transport,13.40,
+2025,8,Utilities,97.20,Energy
+2025,8,Utilities,45.00,Internet
+2025,9,Groceries,69.81,
+2025,9,Groceries,90.09,
+2025,9,Groceries,74.39,
+2025,9,Eating out,46.46,
+2025,9,Eating out,39.99,
+2025,9,Rent,950.00,
+2025,9,Health,36.45,
+2025,9,Health,81.29,"Dentist, check-up"
+2025,9,Clothing,73.27,
+2025,9,Clothing,65.24,
+2025,9,Entertainment,12.61,
+2025,9,Entertainment,19.78,
+2025,9,Subscriptions,12.99,Streaming
+2025,9,Subscriptions,10.99,Music
+2025,9,Subscriptions,2.99,Cloud storage
+2025,9,Gifts,34.73,
+2025,9,Sport,34.50,
+2025,9,Transport,28.58,
+2025,9,Utilities,74.55,Energy
+2025,9,Utilities,45.00,Internet
+2025,10,Groceries,101.19,
+2025,10,Groceries,73.52,
+2025,10,Groceries,76.20,
+2025,10,Groceries,93.16,
+2025,10,Eating out,29.84,
+2025,10,Rent,950.00,
+2025,10,Health,36.42,
+2025,10,Clothing,28.52,
+2025,10,Clothing,71.89,
+2025,10,Clothing,131.38,"Season sale, shoes"
+2025,10,Entertainment,39.91,
+2025,10,Entertainment,32.92,
+2025,10,Subscriptions,12.99,Streaming
+2025,10,Subscriptions,10.99,Music
+2025,10,Subscriptions,2.99,Cloud storage
+2025,10,Gifts,17.54,
+2025,10,Sport,34.50,
+2025,10,Sport,21.30,
+2025,10,Transport,38.85,
+2025,10,Transport,41.07,
+2025,10,Utilities,95.53,Energy
+2025,10,Utilities,45.00,Internet
+2025,11,Groceries,41.38,
+2025,11,Groceries,55.55,
+2025,11,Groceries,64.17,
+2025,11,Eating out,47.83,
+2025,11,Eating out,43.15,
+2025,11,Eating out,31.21,
+2025,11,Rent,950.00,
+2025,11,Health,8.96,
+2025,11,Health,27.75,Pharmacy
+2025,11,Clothing,27.22,
+2025,11,Clothing,71.04,
+2025,11,Entertainment,10.59,
+2025,11,Entertainment,14.64,Cinema
+2025,11,Subscriptions,12.99,Streaming
+2025,11,Subscriptions,10.99,Music
+2025,11,Subscriptions,2.99,Cloud storage
+2025,11,Gifts,19.12,
+2025,11,Sport,34.50,
+2025,11,Transport,44.76,
+2025,11,Transport,31.45,
+2025,11,Transport,18.72,
+2025,11,Utilities,136.23,Energy
+2025,11,Utilities,45.00,Internet
+2025,12,Groceries,91.45,
+2025,12,Groceries,98.69,
+2025,12,Groceries,43.63,
+2025,12,Eating out,15.07,
+2025,12,Eating out,57.23,
+2025,12,Eating out,51.27,
+2025,12,Rent,950.00,
+2025,12,Health,20.85,
+2025,12,Health,26.94,
+2025,12,Clothing,76.79,
+2025,12,Clothing,69.53,
+2025,12,Entertainment,39.03,
+2025,12,Entertainment,38.50,Cinema
+2025,12,Entertainment,22.58,Concert
+2025,12,Subscriptions,12.99,Streaming
+2025,12,Subscriptions,10.99,Music
+2025,12,Subscriptions,2.99,Cloud storage
+2025,12,Gifts,94.21,Christmas presents
+2025,12,Gifts,23.80,
+2025,12,Sport,34.50,
+2025,12,Transport,62.13,
+2025,12,Utilities,127.89,Energy
+2025,12,Utilities,45.00,Internet
+2026,1,Groceries,62.93,
+2026,1,Groceries,88.23,
+2026,1,Groceries,64.44,
+2026,1,Groceries,91.51,
+2026,1,Eating out,39.99,
+2026,1,Eating out,55.66,
+2026,1,Eating out,49.77,
+2026,1,Rent,985.00,Rent increase
+2026,1,Health,43.94,Pharmacy
+2026,1,Clothing,40.34,
+2026,1,Entertainment,35.96,Concert
+2026,1,Entertainment,10.69,Concert
+2026,1,Subscriptions,12.99,Streaming
+2026,1,Subscriptions,10.99,Music
+2026,1,Subscriptions,2.99,Cloud storage
+2026,1,Gifts,15.45,
+2026,1,Sport,34.50,
+2026,1,Sport,53.50,
+2026,1,Transport,63.58,
+2026,1,Transport,40.68,
+2026,1,Utilities,145.58,Energy
+2026,1,Utilities,45.00,Internet
+2026,1,Utilities,30.90,Water
+2026,2,Groceries,112.23,
+2026,2,Groceries,88.37,
+2026,2,Groceries,111.05,
+2026,2,Groceries,96.72,
+2026,2,Eating out,54.13,
+2026,2,Eating out,20.37,
+2026,2,Eating out,16.46,
+2026,2,Rent,985.00,
+2026,2,Health,12.80,
+2026,2,Clothing,73.82,
+2026,2,Entertainment,30.93,Concert
+2026,2,Entertainment,30.89,Concert
+2026,2,Entertainment,21.33,Cinema
+2026,2,Subscriptions,12.99,Streaming
+2026,2,Subscriptions,10.99,Music
+2026,2,Subscriptions,2.99,Cloud storage
+2026,2,Gifts,31.49,
+2026,2,Sport,34.50,
+2026,2,Transport,45.14,
+2026,2,Transport,15.74,
+2026,2,Utilities,120.25,Energy
+2026,2,Utilities,45.00,Internet
+2026,3,Groceries,61.46,
+2026,3,Groceries,40.96,
+2026,3,Groceries,86.99,
+2026,3,Eating out,33.99,
+2026,3,Rent,985.00,
+2026,3,Health,43.58,
+2026,3,Health,87.13,"Dentist, check-up"
+2026,3,Clothing,55.97,
+2026,3,Clothing,23.82,
+2026,3,Entertainment,19.04,
+2026,3,Subscriptions,12.99,Streaming
+2026,3,Subscriptions,10.99,Music
+2026,3,Subscriptions,2.99,Cloud storage
+2026,3,Gifts,21.41,
+2026,3,Sport,34.50,
+2026,3,Transport,47.95,
+2026,3,Transport,30.66,
+2026,3,Transport,22.41,
+2026,3,Utilities,126.76,Energy
+2026,3,Utilities,45.00,Internet
+2026,4,Groceries,112.78,
+2026,4,Groceries,88.96,
+2026,4,Groceries,70.65,
+2026,4,Eating out,26.62,
+2026,4,Eating out,31.05,
+2026,4,Rent,985.00,
+2026,4,Health,22.65,
+2026,4,Health,20.34,
+2026,4,Clothing,82.48,
+2026,4,Clothing,112.64,"Season sale, shoes"
+2026,4,Entertainment,10.47,
+2026,4,Entertainment,17.67,Concert
+2026,4,Subscriptions,12.99,Streaming
+2026,4,Subscriptions,10.99,Music
+2026,4,Subscriptions,2.99,Cloud storage
+2026,4,Gifts,23.46,
+2026,4,Sport,34.50,
+2026,4,Transport,53.11,
+2026,4,Transport,56.64,
+2026,4,Utilities,90.92,Energy
+2026,4,Utilities,45.00,Internet
+2026,5,Groceries,86.78,
+2026,5,Groceries,76.86,
+2026,5,Groceries,80.65,
+2026,5,Eating out,19.99,
+2026,5,Eating out,17.57,
+2026,5,Eating out,34.64,
+2026,5,Rent,985.00,
+2026,5,Health,28.39,Pharmacy
+2026,5,Clothing,18.70,
+2026,5,Clothing,35.88,
+2026,5,Entertainment,37.55,
+2026,5,Entertainment,19.10,Concert
+2026,5,Subscriptions,12.99,Streaming
+2026,5,Subscriptions,10.99,Music
+2026,5,Subscriptions,2.99,Cloud storage
+2026,5,Gifts,13.01,
+2026,5,Sport,34.50,
+2026,5,Transport,12.26,
+2026,5,Transport,34.77,
+2026,5,Utilities,76.73,Energy
+2026,5,Utilities,45.00,Internet
+2026,6,Groceries,76.65,
+2026,6,Groceries,40.46,
+2026,6,Groceries,50.59,
+2026,6,Eating out,22.50,
+2026,6,Eating out,27.83,
+2026,6,Rent,985.00,
+2026,6,Health,12.74,
+2026,6,Health,40.05,
+2026,6,Clothing,53.52,
+2026,6,Entertainment,39.64,
+2026,6,Subscriptions,12.99,Streaming
+2026,6,Subscriptions,10.99,Music
+2026,6,Subscriptions,2.99,Cloud storage
+2026,6,Gifts,13.56,
+2026,6,Sport,34.50,
+2026,6,Sport,46.17,Running shoes
+2026,6,Transport,36.10,
+2026,6,Transport,56.14,
+2026,6,Utilities,84.71,Energy
+2026,6,Utilities,45.00,Internet
+2026,7,Groceries,98.15,
+2026,7,Groceries,108.21,
+2026,7,Groceries,72.34,
+2026,7,Eating out,102.51,Holiday dinner
+2026,7,Eating out,101.96,
+2026,7,Eating out,133.23,
+2026,7,Eating out,88.96,
+2026,7,Rent,985.00,
+2026,7,Health,17.60,
+2026,7,Health,40.70,
+2026,7,Clothing,55.91,
+2026,7,Clothing,74.28,
+2026,7,Entertainment,88.38,Museum tickets
+2026,7,Entertainment,79.88,
+2026,7,Entertainment,44.88,Concert
+2026,7,Subscriptions,12.99,Streaming
+2026,7,Subscriptions,10.99,Music
+2026,7,Subscriptions,2.99,Cloud storage
+2026,7,Gifts,34.26,Birthday
+2026,7,Sport,34.50,
+2026,7,Sport,53.04,Running shoes
+2026,7,Transport,468.00,"Flights to Lisbon, return"
+2026,7,Transport,37.73,Airport train
+2026,7,Transport,23.92,
+2026,7,Utilities,80.53,Energy
+2026,7,Utilities,45.00,Internet
+2026,7,Utilities,33.57,Water
+2026,8,Groceries,69.45,
+2026,8,Groceries,39.90,
+2026,8,Groceries,45.15,
+2026,8,Eating out,42.59,
+2026,8,Eating out,21.35,
+2026,8,Eating out,40.93,
+2026,8,Rent,985.00,
+2026,8,Health,17.89,
+2026,8,Clothing,71.46,
+2026,8,Entertainment,36.00,Concert
+2026,8,Entertainment,19.06,
+2026,8,Subscriptions,12.99,Streaming
+2026,8,Subscriptions,10.99,Music
+2026,8,Subscriptions,2.99,Cloud storage
+2026,8,Gifts,31.17,Birthday
+2026,8,Sport,34.50,
+2026,8,Sport,16.34,Running shoes
+2026,8,Transport,51.17,
+2026,8,Transport,49.75,
+2026,8,Transport,21.51,
+2026,8,Utilities,103.49,Energy
+2026,8,Utilities,45.00,Internet
+2026,9,Groceries,70.48,
+2026,9,Groceries,110.54,
+2026,9,Groceries,87.06,
+2026,9,Groceries,54.67,
+2026,9,Eating out,53.43,
+2026,9,Eating out,55.78,
+2026,9,Rent,985.00,
+2026,9,Health,34.06,Pharmacy
+2026,9,Health,37.85,
+2026,9,Health,82.69,"Dentist, check-up"
+2026,9,Clothing,71.70,
+2026,9,Entertainment,23.00,
+2026,9,Entertainment,32.12,
+2026,9,Entertainment,31.13,Cinema
+2026,9,Subscriptions,12.99,Streaming
+2026,9,Subscriptions,10.99,Music
+2026,9,Subscriptions,2.99,Cloud storage
+2026,9,Gifts,36.00,
+2026,9,Sport,34.50,
+2026,9,Transport,25.27,
+2026,9,Transport,27.61,
+2026,9,Transport,19.28,
+2026,9,Utilities,104.16,Energy
+2026,9,Utilities,45.00,Internet
+2026,10,Groceries,83.72,
+2026,10,Groceries,114.49,
+2026,10,Groceries,57.78,
+2026,10,Groceries,69.20,
+2026,10,Eating out,41.63,
+2026,10,Rent,985.00,
+2026,10,Health,25.78,
+2026,10,Clothing,53.58,
+2026,10,Clothing,65.25,
+2026,10,Clothing,103.07,"Season sale, shoes"
+2026,10,Entertainment,35.34,
+2026,10,Entertainment,37.22,
+2026,10,Entertainment,18.02,Concert
+2026,10,Subscriptions,12.99,Streaming
+2026,10,Subscriptions,10.99,Music
+2026,10,Subscriptions,2.99,Cloud storage
+2026,10,Gifts,14.14,Birthday
+2026,10,Sport,34.50,
+2026,10,Transport,44.28,
+2026,10,Transport,20.21,
+2026,10,Utilities,78.89,Energy
+2026,10,Utilities,45.00,Internet

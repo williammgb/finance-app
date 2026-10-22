@@ -1,1 +1,9 @@
 .work/
+bin/
+obj/
+data/
+*.db
+*.db-shm
+*.db-wal
+.playwright-mcp/
+TestResults/

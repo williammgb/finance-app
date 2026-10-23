@@ -1,6 +1,7 @@
 .work/
 bin/
 obj/
+nupkg/
 data/
 *.db
 *.db-shm

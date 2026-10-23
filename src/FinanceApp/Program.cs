@@ -5,18 +5,36 @@ using FinanceApp.Storage;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+// `financeapp demo` is short for the demo on its own port, so it can run next to the real app.
+if (args is ["demo", .. var rest])
+{
+    args = [.. rest, "--Demo", "true", "--Urls", "http://localhost:5081"];
+}
+
+// Run from source (dotnet run, ./run) the working folder is the project folder, and data stays in
+// src/FinanceApp/data. Installed as the `financeapp` tool it can start in any folder, so it serves
+// its own files from the install folder and keeps data in the user's local app data folder, which
+// survives reinstalling the tool.
+var fromSource = File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "FinanceApp.csproj"));
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = fromSource ? null : AppContext.BaseDirectory,
+});
 var contentRoot = builder.Environment.ContentRootPath;
-var dataFolder = builder.Configuration["DataFolder"] ?? "data";
+var dataFolder = builder.Configuration["DataFolder"]
+    ?? (fromSource ? "data" : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FinanceApp"));
 
 // The database is <content root>/<DataFolder>/finance.db; DataFolder may be an absolute path.
-// Demo mode (--Demo true) uses <DataFolder>/demo.db instead, rebuilt from the committed sample at
-// every start; finance.db is never opened then.
+// Demo mode (--Demo true) uses <DataFolder>/demo.db instead, rebuilt from the sample at every
+// start; finance.db is never opened then.
 string connectionString;
 CsvData? demoData = null;
 if (builder.Configuration.GetValue<bool>("Demo"))
 {
-    var samplePath = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "samples", "example-spending.csv"));
+    var samplePath = fromSource
+        ? Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "samples", "example-spending.csv"))
+        : Path.Combine(contentRoot, "samples", "example-spending.csv");
     if (!File.Exists(samplePath))
     {
         Console.Error.WriteLine($"Demo data not found: {samplePath}");

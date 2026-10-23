@@ -8,6 +8,22 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
+  <!-- `dotnet pack` turns the app into a .NET tool: once installed, `financeapp` starts it from any folder. -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>financeapp</ToolCommandName>
+    <PackageId>FinanceApp</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Track monthly spending per category in your browser, on your own PC.</Description>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)../../nupkg</PackageOutputPath>
+  </PropertyGroup>
+
+  <!-- The demo's sample data ships with the tool, which has no repository around it. -->
+  <ItemGroup>
+    <None Include="../../samples/example-spending.csv" Link="samples/example-spending.csv" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Blazor-ApexCharts" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">

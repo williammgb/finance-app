@@ -21,19 +21,8 @@ financeapp        # serve the app at http://localhost:5080
 financeapp demo   # serve it at http://localhost:5081 on example data
 ```
 
-Your data is kept in `%LOCALAPPDATA%\FinanceApp` (on Linux and macOS, `~/.local/share/FinanceApp`),
-so it survives updating or reinstalling the app. To update after pulling new code, pack again and
-run `dotnet tool update -g FinanceApp --add-source ./nupkg`.
-
-## Develop
-
-Needs Git Bash as well. Run from source, the app keeps its data in `src/FinanceApp/data/`.
-
-```sh
-./run setup   # restore the local tools and the locked NuGet packages
-./run start   # serve the app at http://localhost:5080
-./run demo    # serve the app at http://localhost:5081 on example data
-```
+To update after pulling new code, pack again and run
+`dotnet tool update -g FinanceApp --add-source ./nupkg`.
 
 ## Screenshot
 
